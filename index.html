@@ -76,15 +76,19 @@
       height:100%;
       position:relative;
       transform-style:preserve-3d;
-      animation: rotate var(--spin-seconds) linear infinite;
+      /*animation: rotate var(--spin-seconds) linear infinite;*/
     }
+    .scene { touch-action: pan-y; } /* 允許上下滾動，水平交給你控制 */
+
+    /*
     .carousel:hover{
-      animation-play-state: paused; /* 滑鼠移上去整圈暫停 */
+      animation-play-state: paused; 
     }
     @keyframes rotate{
       from { transform: rotateY(0deg); }
       to   { transform: rotateY(360deg); }
     }
+    */
 
     /* 外層：只負責 3D 定位。不要在這層改 layout（width/height/margin） */
     .carousel-item{
@@ -133,7 +137,10 @@
       transition: opacity 0.35s ease;
       box-shadow: inset 0 0 38px rgba(255,215,0,0.38);
     }
-
+    .card-media{
+        backface-visibility: hidden;
+        -webkit-backface-visibility: hidden; /* iOS Safari */
+    }
     /* Hover：外層前推 + 內層放大（不破壞 3D 排列） */
     .carousel-item:hover{
       z-index: 10;
@@ -241,57 +248,121 @@
     // ======================
     // 3D Carousel
     // ======================
-    function Carousel({ items }){
-      const count = items.length;
-      const radius = Math.max(260, count * 45); // 保底半徑避免太擠
+    function Carousel({ items }) {
+        const count = items.length;
+        const radius = Math.max(260, count * 45);
 
-      return (
-        <div className="scene">
-          <div className="carousel">
-            {items.map((item, index) => {
-              const angle = (360 / count) * index;
-              // 外層 transform：rotateY + translateZ + hover pop-z
-              const transform = `
-                rotateY(${angle}deg)
-                translateZ(calc(${radius}px + var(--pop-z)))
-              `;
+        const carouselRef = useRef(null);
+        const rafRef = useRef(null);
 
-              return (
-                <div
-                  key={index}
-                  className="carousel-item"
-                  style={{ transform }}
-                  onMouseEnter={(e) => { e.currentTarget.style.setProperty("--pop-z", getComputedStyle(document.documentElement).getPropertyValue("--hover-z").trim() || "70px"); }}
-                  onMouseLeave={(e) => { e.currentTarget.style.setProperty("--pop-z", "0px"); }}
-                >
-                  <div className="card-inner">
-                    {item.type === "video" ? (
-                      <video
-                        className="card-media"
-                        src={item.url}
-                        muted
-                        loop
-                        playsInline
-                        autoPlay
-                        preload="metadata"
-                      />
-                    ) : (
-                      <img
-                        className="card-media"
-                        src={item.url}
-                        alt="Memory"
-                        loading="lazy"
-                        decoding="async"
-                      />
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      );
+        const angleRef = useRef(0);        // 目前角度（deg）
+        const velRef = useRef(0.25);       // 角速度（deg/frame）基礎自轉
+        const draggingRef = useRef(false);
+        const lastXRef = useRef(0);
+
+        useEffect(() => {
+            const tick = () => {
+            // 摩擦力（甩出去後會慢慢停到基礎自轉）
+            const friction = 0.985;
+
+            // 若沒有拖曳，速度慢慢回到 base（0.25）
+            const base = 0.25;
+            if (!draggingRef.current) {
+                velRef.current = velRef.current * friction + base * (1 - friction);
+            } else {
+                // 拖曳中也稍微減振，避免抖動
+                velRef.current *= 0.95;
+            }
+
+            angleRef.current = (angleRef.current + velRef.current) % 360;
+
+            if (carouselRef.current) {
+                carouselRef.current.style.transform = `rotateY(${angleRef.current}deg)`;
+            }
+
+            rafRef.current = requestAnimationFrame(tick);
+            };
+
+            rafRef.current = requestAnimationFrame(tick);
+            return () => cancelAnimationFrame(rafRef.current);
+        }, []);
+
+        const onPointerDown = (e) => {
+            draggingRef.current = true;
+            lastXRef.current = e.clientX ?? (e.touches && e.touches[0]?.clientX) ?? 0;
+        };
+
+        const onPointerMove = (e) => {
+            if (!draggingRef.current) return;
+
+            const x = e.clientX ?? (e.touches && e.touches[0]?.clientX) ?? 0;
+            const dx = x - lastXRef.current;
+            lastXRef.current = x;
+
+            // dx 轉成角速度：你可以調 0.08~0.2 之間找手感
+            velRef.current = dx * 0.12;
+        };
+
+        const onPointerUp = () => {
+            draggingRef.current = false;
+        };
+
+        return (
+            <div
+            className="scene"
+            onMouseDown={onPointerDown}
+            onMouseMove={onPointerMove}
+            onMouseUp={onPointerUp}
+            onMouseLeave={onPointerUp}
+            onTouchStart={onPointerDown}
+            onTouchMove={onPointerMove}
+            onTouchEnd={onPointerUp}
+            >
+            <div ref={carouselRef} className="carousel">
+                {items.map((item, index) => {
+                const angle = (360 / count) * index;
+                const transform = `
+                    rotateY(${angle}deg)
+                    translateZ(calc(${radius}px + var(--pop-z)))
+                `;
+
+                return (
+                    <div
+                    key={index}
+                    className="carousel-item"
+                    style={{ transform }}
+                    onMouseEnter={(e) => e.currentTarget.style.setProperty("--pop-z", "70px")}
+                    onMouseLeave={(e) => e.currentTarget.style.setProperty("--pop-z", "0px")}
+                    >
+                    <div className="card-inner">
+                        {item.type === "video" ? (
+                        <video
+                            className="card-media"
+                            src={item.url}
+                            muted
+                            loop
+                            playsInline
+                            autoPlay
+                            preload="metadata"
+                        />
+                        ) : (
+                        <img
+                            className="card-media"
+                            src={item.url}
+                            alt="Memory"
+                            loading="lazy"
+                            decoding="async"
+                        />
+                        )}
+                    </div>
+                    </div>
+                );
+                })}
+            </div>
+            </div>
+        );
     }
+
 
     // ======================
     // App
