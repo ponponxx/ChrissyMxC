@@ -62,117 +62,122 @@
     }
 
     /* 3D Carousel */
+    /* 3D Carousel */
     .scene{
-      perspective: 1000px;
-      height: 520px;
-      display:flex;
-      justify-content:center;
-      align-items:center;
-      margin: 1.5rem 0 2rem;
-      position:relative;
+    perspective: 1000px;
+    height: 520px;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    margin: 1.5rem 0 2rem;
+    position:relative;
+    touch-action: pan-y; /* 允許上下滾動，水平交給你控制 */
     }
+
     .carousel{
-      width:100%;
-      height:100%;
-      position:relative;
-      transform-style:preserve-3d;
-      /*animation: rotate var(--spin-seconds) linear infinite;*/
+    width:100%;
+    height:100%;
+    position:relative;
+    transform-style:preserve-3d;
+    /* animation: rotate var(--spin-seconds) linear infinite; */
     }
-    .scene { touch-action: pan-y; } /* 允許上下滾動，水平交給你控制 */
 
-    /*
-    .carousel:hover{
-      animation-play-state: paused; 
-    }
-    @keyframes rotate{
-      from { transform: rotateY(0deg); }
-      to   { transform: rotateY(360deg); }
-    }
-    */
-
-    /* 外層：只負責 3D 定位。不要在這層改 layout（width/height/margin） */
+    /* 外層：只負責 3D 定位 */
     .carousel-item{
-      position:absolute;
-      top:50%;
-      left:50%;
-      width: var(--card-w);
-      height: var(--card-h);
-      margin-left: calc(var(--card-w) / -2);
-      margin-top:  calc(var(--card-h) / -2);
-      transform-style: preserve-3d;
-      backface-visibility:hidden;
+    position:absolute;
+    top:50%;
+    left:50%;
+    width: var(--card-w);
+    height: var(--card-h);
+    margin-left: calc(var(--card-w) / -2);
+    margin-top:  calc(var(--card-h) / -2);
+    transform-style: preserve-3d;
 
-      --pop-z: 0px; /* hover 時外層往前推 */
-      transition: transform 0.35s ease;
-      will-change: transform;
+    --pop-z: 0px;
+    transition: transform 0.35s ease;
+    will-change: transform;
     }
 
-    /* 內層：視覺效果（邊框、陰影、放大）都放在這層 */
+    /* 內層：視覺效果 */
     .card-inner{
-      width:100%;
-      height:100%;
-      border-radius: var(--card-radius);
-      overflow:hidden;
-      background:#fff;
-      border: var(--card-border) solid #fff;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.55);
+    width:100%;
+    height:100%;
+    border-radius: var(--card-radius);
+    overflow:hidden;
+    background:#fff;
+    border: var(--card-border) solid #fff;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.55);
 
-      transform: translateZ(0); /* 提示 GPU 合成 */
-      transition:
+    transform: translateZ(0);
+    transition:
         transform 0.35s ease,
         box-shadow 0.35s ease,
         filter 0.35s ease;
-      will-change: transform, filter;
-      position:relative;
+    will-change: transform, filter;
+    position:relative;
     }
 
     /* 內光 */
     .card-inner::after{
-      content:'';
-      position:absolute;
-      inset:0;
-      border-radius: var(--card-radius);
-      pointer-events:none;
-      opacity:0;
-      transition: opacity 0.35s ease;
-      box-shadow: inset 0 0 38px rgba(255,215,0,0.38);
-    }
-    .card-media{
-        backface-visibility: hidden;
-        -webkit-backface-visibility: hidden; /* iOS Safari */
-    }
-    /* Hover：外層前推 + 內層放大（不破壞 3D 排列） */
-    .carousel-item:hover{
-      z-index: 10;
-    }
-    .carousel-item:hover .card-inner{
-      transform: scale(var(--hover-scale));
-      box-shadow: 0 30px 60px rgba(0,0,0,0.75);
-      filter: brightness(1.06);
-    }
-    .carousel-item:hover .card-inner::after{
-      opacity:1;
+    content:'';
+    position:absolute;
+    inset:0;
+    border-radius: var(--card-radius);
+    pointer-events:none;
+    opacity:0;
+    transition: opacity 0.35s ease;
+    box-shadow: inset 0 0 38px rgba(255,215,0,0.38);
     }
 
-    /* 內容在 hover 時仍可點擊 / 不被遮擋 */
+    /* ✅ 背面隱藏：三層一起做，iOS 最穩 */
+    .carousel-item,
+    .card-inner,
     .card-media{
-      width:100%;
-      height:100%;
-      object-fit:cover;
-      display:block;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
     }
+
+    /* ✅ 抑制長按另存/選取 */
+    .carousel-item,
+    .card-inner,
+    .card-media{
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+    }
+    img.card-media{
+    -webkit-user-drag: none;
+    pointer-events: none; /* 若不需要點圖片事件，強烈建議 */
+    }
+
+    /* Media */
+    .card-media{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    display:block;
+    }
+
+    /* Hover */
+    .carousel-item:hover{ z-index: 10; }
+    .carousel-item:hover .card-inner{
+    transform: scale(var(--hover-scale));
+    box-shadow: 0 30px 60px rgba(0,0,0,0.75);
+    filter: brightness(1.06);
+    }
+    .carousel-item:hover .card-inner::after{ opacity:1; }
 
     /* 手機尺寸調整 */
     @media (max-width: 768px){
-      :root{
+    :root{
         --card-w: 140px;
         --card-h: 200px;
         --hover-scale: 1.10;
         --hover-z: 55px;
-      }
-      .scene{ height: 420px; }
-      /* 手機沒有 hover，縮放影響不大；保留也不會壞 */
     }
+    .scene{ height: 420px; }
+    }
+
   </style>
 </head>
 
@@ -206,7 +211,7 @@
 
     // 3) 文字
     const toName = "親愛的Chirssy寶寶";
-    const message = "辛苦了\n2025 聖誕快樂！";
+    const message = "辛苦了~~~\n2025 聖誕快樂！";
     const fromName = "愛妳的阿彭";
 
     // ======================
@@ -455,7 +460,7 @@
             </div>
 
             <div className="mt-4 text-center text-white/40 text-xs">
-              提示：桌機滑鼠移到照片上會「浮出」，整圈會暫停；手機可直接觀看旋轉。
+              提示：真ㄉ不好弄...網路上都騙人。
             </div>
           </div>
         </div>
