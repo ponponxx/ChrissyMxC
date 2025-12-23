@@ -1,473 +1,503 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
+
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>給親愛的寶寶 · 2025 聖誕快樂</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>給親愛的寶寶 · 2025 聖誕快樂</title>
 
-  <!-- React -->
-  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
-  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+    <!-- React -->
+    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
 
-  <!-- Babel (JSX in single HTML) -->
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <!-- Babel (JSX in single HTML) -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
-  <!-- Tailwind -->
-  <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Tailwind -->
+    <script src="https://cdn.tailwindcss.com"></script>
 
-  <!-- Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700&family=Mountains+of+Christmas:wght@400;700&display=swap" rel="stylesheet"/>
+    <!-- Fonts -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700&family=Mountains+of+Christmas:wght@400;700&display=swap"
+        rel="stylesheet" />
 
-  <style>
-    :root{
-      --card-w: 200px;
-      --card-h: 280px;
-      --card-radius: 14px;
-      --card-border: 4px;
-      --hover-scale: 1.14;       /* 內層放大倍率：不破壞 3D 排列 */
-      --hover-z: 70px;           /* 外層 Z 軸 pop：讓卡片往前 */
-      --spin-seconds: 30s;
-    }
+    <style>
+        :root {
+            --card-w: 200px;
+            --card-h: 280px;
+            --card-radius: 14px;
+            --card-border: 4px;
+            --hover-scale: 1.14;
+            /* 內層放大倍率：不破壞 3D 排列 */
+            --hover-z: 70px;
+            /* 外層 Z 軸 pop：讓卡片往前 */
+            --spin-seconds: 30s;
+        }
 
-    body{
-      font-family: "Noto Sans TC", sans-serif;
-      background-color:#0f172a;
-      overflow-x:hidden;
-      margin:0;
-    }
+        body {
+            font-family: "Noto Sans TC", sans-serif;
+            background-color: #0f172a;
+            overflow-x: hidden;
+            margin: 0;
+        }
 
-    .title-font{
-      font-family:"Mountains of Christmas", cursive;
-    }
+        .title-font {
+            font-family: "Mountains of Christmas", cursive;
+        }
 
-    /* Snow */
-    .snow-container{
-      position:fixed;
-      inset:0;
-      pointer-events:none;
-      z-index:50;
-      overflow:hidden;
-    }
-    .snowflake{
-      position:absolute;
-      top:-10px;
-      color:#fff;
-      animation: fall linear infinite;
-      will-change: transform, opacity;
-      user-select:none;
-    }
-    @keyframes fall{
-      0%   { transform: translateY(-10vh) translateX(0); opacity:1; }
-      100% { transform: translateY(110vh) translateX(20px); opacity:0; }
-    }
+        /* Snow */
+        .snow-container {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 50;
+            overflow: hidden;
+        }
 
-    /* 3D Carousel */
-    /* 3D Carousel */
-    .scene{
-    perspective: 1000px;
-    height: 520px;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    margin: 1.5rem 0 2rem;
-    position:relative;
-    touch-action: pan-y; /* 允許上下滾動，水平交給你控制 */
-    }
+        .snowflake {
+            position: absolute;
+            top: -10px;
+            color: #fff;
+            animation: fall linear infinite;
+            will-change: transform, opacity;
+            user-select: none;
+        }
 
-    .carousel{
-    width:100%;
-    height:100%;
-    position:relative;
-    transform-style:preserve-3d;
-    /* animation: rotate var(--spin-seconds) linear infinite; */
-    }
+        @keyframes fall {
+            0% {
+                transform: translateY(-10vh) translateX(0);
+                opacity: 1;
+            }
 
-    /* 外層：只負責 3D 定位 */
-    .carousel-item{
-    position:absolute;
-    top:50%;
-    left:50%;
-    width: var(--card-w);
-    height: var(--card-h);
-    margin-left: calc(var(--card-w) / -2);
-    margin-top:  calc(var(--card-h) / -2);
-    transform-style: preserve-3d;
+            100% {
+                transform: translateY(110vh) translateX(20px);
+                opacity: 0;
+            }
+        }
 
-    --pop-z: 0px;
-    transition: transform 0.35s ease;
-    will-change: transform;
-    }
+        /* 3D Carousel */
+        /* 3D Carousel */
+        .scene {
+            perspective: 1000px;
+            height: 520px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 1.5rem 0 2rem;
+            position: relative;
+            touch-action: pan-y;
+            /* 允許上下滾動，水平交給你控制 */
+        }
 
-    /* 內層：視覺效果 */
-    .card-inner{
-    width:100%;
-    height:100%;
-    border-radius: var(--card-radius);
-    overflow:hidden;
-    background:#fff;
-    border: var(--card-border) solid #fff;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.55);
+        .carousel {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transform-style: preserve-3d;
+            /* animation: rotate var(--spin-seconds) linear infinite; */
+        }
 
-    transform: translateZ(0);
-    transition:
-        transform 0.35s ease,
-        box-shadow 0.35s ease,
-        filter 0.35s ease;
-    will-change: transform, filter;
-    position:relative;
-    }
+        /* 外層：只負責 3D 定位 */
+        .carousel-item {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: var(--card-w);
+            height: var(--card-h);
+            margin-left: calc(var(--card-w) / -2);
+            margin-top: calc(var(--card-h) / -2);
+            transform-style: preserve-3d;
 
-    /* 內光 */
-    .card-inner::after{
-    content:'';
-    position:absolute;
-    inset:0;
-    border-radius: var(--card-radius);
-    pointer-events:none;
-    opacity:0;
-    transition: opacity 0.35s ease;
-    box-shadow: inset 0 0 38px rgba(255,215,0,0.38);
-    }
+            --pop-z: 0px;
+            transition: transform 0.35s ease;
+            will-change: transform;
+        }
 
-    /* ✅ 背面隱藏：三層一起做，iOS 最穩 */
-    .carousel-item,
-    .card-inner,
-    .card-media{
-    backface-visibility: hidden;
-    -webkit-backface-visibility: hidden;
-    }
+        /* 內層：視覺效果 */
+        .card-inner {
+            width: 100%;
+            height: 100%;
+            border-radius: var(--card-radius);
+            overflow: hidden;
+            background: #fff;
+            border: var(--card-border) solid #fff;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.55);
 
-    /* ✅ 抑制長按另存/選取 */
-    .carousel-item,
-    .card-inner,
-    .card-media{
-    -webkit-touch-callout: none;
-    -webkit-user-select: none;
-    user-select: none;
-    }
-    img.card-media{
-    -webkit-user-drag: none;
-    pointer-events: none; /* 若不需要點圖片事件，強烈建議 */
-    }
+            transform: translateZ(0);
+            transition:
+                transform 0.35s ease,
+                box-shadow 0.35s ease,
+                filter 0.35s ease;
+            will-change: transform, filter;
+            position: relative;
+        }
 
-    /* Media */
-    .card-media{
-    width:100%;
-    height:100%;
-    object-fit:cover;
-    display:block;
-    }
+        /* 內光 */
+        .card-inner::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: var(--card-radius);
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.35s ease;
+            box-shadow: inset 0 0 38px rgba(255, 215, 0, 0.38);
+        }
 
-    /* Hover */
-    .carousel-item:hover{ z-index: 10; }
-    .carousel-item:hover .card-inner{
-    transform: scale(var(--hover-scale));
-    box-shadow: 0 30px 60px rgba(0,0,0,0.75);
-    filter: brightness(1.06);
-    }
-    .carousel-item:hover .card-inner::after{ opacity:1; }
+        /* ✅ 背面隱藏：三層一起做，iOS 最穩 */
+        .carousel-item,
+        .card-inner,
+        .card-media {
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+        }
 
-    /* 手機尺寸調整 */
-    @media (max-width: 768px){
-    :root{
-        --card-w: 140px;
-        --card-h: 200px;
-        --hover-scale: 1.10;
-        --hover-z: 55px;
-    }
-    .scene{ height: 420px; }
-    }
+        /* ✅ 抑制長按另存/選取 */
+        .carousel-item,
+        .card-inner,
+        .card-media {
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
+        }
 
-  </style>
+        img.card-media {
+            -webkit-user-drag: none;
+            pointer-events: none;
+            /* 若不需要點圖片事件，強烈建議 */
+        }
+
+        /* Media */
+        .card-media {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        /* Hover */
+        .carousel-item:hover {
+            z-index: 10;
+        }
+
+        .carousel-item:hover .card-inner {
+            transform: scale(var(--hover-scale));
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.75);
+            filter: brightness(1.06);
+        }
+
+        .carousel-item:hover .card-inner::after {
+            opacity: 1;
+        }
+
+        /* 手機尺寸調整 */
+        @media (max-width: 768px) {
+            :root {
+                --card-w: 140px;
+                --card-h: 200px;
+                --hover-scale: 1.10;
+                --hover-z: 55px;
+            }
+
+            .scene {
+                height: 420px;
+            }
+        }
+    </style>
 </head>
 
 <body>
-  <div id="root"></div>
+    <div id="root"></div>
 
-  <script type="text/babel">
-    const { useEffect, useMemo, useRef, useState } = React;
+    <script type="text/babel">
+        const { useEffect, useMemo, useRef, useState } = React;
 
-    // ======================
-    // 使用者設定區
-    // ======================
-    // 1) 音樂檔：請放在 assets/audio/
-    const musicUrl = "assets/audio/Snowflake.mp3";
+        // ======================
+        // 使用者設定區
+        // ======================
+        // 1) 音樂檔：請放在 assets/audio/
+        const musicUrl = "assets/audio/Snowflake.mp3";
 
-    // 2) 你的回憶清單：建議都放 assets
-    // 圖片：assets/images/photo01.jpg...
-    // 影片：assets/videos/video01.mp4...
-    const myMemories = [
-      { type: "image", url: "assets/images/photo01.jpg" },
-      { type: "image", url: "assets/images/photo02.jpg" },
-      { type: "image", url: "assets/images/photo03.jpg" },
-      { type: "image", url: "assets/images/photo04.jpg" },
-      { type: "image", url: "assets/images/photo05.jpg" },
-      { type: "image", url: "assets/images/photo06.jpg" },
-      { type: "image", url: "assets/images/photo07.jpg" },
-      { type: "image", url: "assets/images/photo08.jpg" },
-      // 影片可先不要，若要加：
-      // { type: "video", url: "assets/videos/video01.mp4" },
-    ];
+        // 2) 你的回憶清單：建議都放 assets
+        // 圖片：assets/images/photo01.jpg...
+        // 影片：assets/videos/video01.mp4...
+        const myMemories = [
+            { type: "image", url: "assets/images/photo01.jpg" },
+            { type: "image", url: "assets/images/photo02.jpg" },
+            { type: "image", url: "assets/images/photo03.jpg" },
+            { type: "image", url: "assets/images/photo04.jpg" },
+            { type: "image", url: "assets/images/photo05.jpg" },
+            { type: "image", url: "assets/images/photo06.jpg" },
+            { type: "image", url: "assets/images/photo07.jpg" },
+            { type: "image", url: "assets/images/photo08.jpg" },
+            // 影片可先不要，若要加：
+            // { type: "video", url: "assets/videos/video01.mp4" },
+        ];
 
-    // 3) 文字
-    const toName = "親愛的Chirssy寶寶";
-    const message = "辛苦了~~~\n2025 聖誕快樂！";
-    const fromName = "愛妳的阿彭";
+        // 3) 文字
+        const toName = "親愛的Chirssy寶寶";
+        const message = "辛苦了~~~\n2025 聖誕快樂！";
+        const fromName = "愛妳的阿彭";
 
-    // ======================
-    // 小元件：雪花
-    // ======================
-    function SnowEffect(){
-      const flakes = useMemo(() => {
-        return Array.from({ length: 50 }).map((_, i) => ({
-          id: i,
-          left: Math.random() * 100 + "%",
-          duration: (Math.random() * 5 + 5).toFixed(2) + "s",
-          delay: (Math.random() * 5).toFixed(2) + "s",
-          opacity: (Math.random() * 0.5 + 0.3).toFixed(2),
-          size: (Math.random() * 10 + 10).toFixed(0) + "px",
-        }));
-      }, []);
+        // ======================
+        // 小元件：雪花
+        // ======================
+        function SnowEffect() {
+            const flakes = useMemo(() => {
+                return Array.from({ length: 50 }).map((_, i) => ({
+                    id: i,
+                    left: Math.random() * 100 + "%",
+                    duration: (Math.random() * 5 + 5).toFixed(2) + "s",
+                    delay: (Math.random() * 5).toFixed(2) + "s",
+                    opacity: (Math.random() * 0.5 + 0.3).toFixed(2),
+                    size: (Math.random() * 10 + 10).toFixed(0) + "px",
+                }));
+            }, []);
 
-      return (
-        <div className="snow-container">
-          {flakes.map(f => (
-            <div
-              key={f.id}
-              className="snowflake"
-              style={{
-                left: f.left,
-                animationDuration: f.duration,
-                animationDelay: f.delay,
-                opacity: f.opacity,
-                fontSize: f.size,
-              }}
-            >
-              ❄
-            </div>
-          ))}
-        </div>
-      );
-    }
+            return (
+                <div className="snow-container">
+                    {flakes.map(f => (
+                        <div
+                            key={f.id}
+                            className="snowflake"
+                            style={{
+                                left: f.left,
+                                animationDuration: f.duration,
+                                animationDelay: f.delay,
+                                opacity: f.opacity,
+                                fontSize: f.size,
+                            }}
+                        >
+                            ❄
+                        </div>
+                    ))}
+                </div>
+            );
+        }
 
-    // ======================
-    // 3D Carousel
-    // ======================
-    function Carousel({ items }) {
-        const count = items.length;
-        const radius = Math.max(260, count * 45);
+        // ======================
+        // 3D Carousel
+        // ======================
+        function Carousel({ items }) {
+            const count = items.length;
+            const isMobile = window.matchMedia("(max-width: 768px)").matches;
+            const radius = isMobile
+            ? Math.max(160, count * 28)   // 手機：縮小半徑 & 間距
+            : Math.max(260, count * 45);  // 桌機：維持原本
 
-        const carouselRef = useRef(null);
-        const rafRef = useRef(null);
 
-        const angleRef = useRef(0);        // 目前角度（deg）
-        const velRef = useRef(0.25);       // 角速度（deg/frame）基礎自轉
-        const draggingRef = useRef(false);
-        const lastXRef = useRef(0);
+            const carouselRef = useRef(null);
+            const rafRef = useRef(null);
 
-        useEffect(() => {
-            const tick = () => {
-            // 摩擦力（甩出去後會慢慢停到基礎自轉）
-            const friction = 0.985;
+            const angleRef = useRef(0);        // 目前角度（deg）
+            const velRef = useRef(0.25);       // 角速度（deg/frame）基礎自轉
+            const draggingRef = useRef(false);
+            const lastXRef = useRef(0);
 
-            // 若沒有拖曳，速度慢慢回到 base（0.25）
-            const base = 0.25;
-            if (!draggingRef.current) {
-                velRef.current = velRef.current * friction + base * (1 - friction);
-            } else {
-                // 拖曳中也稍微減振，避免抖動
-                velRef.current *= 0.95;
-            }
+            useEffect(() => {
+                const tick = () => {
+                    // 摩擦力（甩出去後會慢慢停到基礎自轉）
+                    const friction = 0.985;
 
-            angleRef.current = (angleRef.current + velRef.current) % 360;
+                    // 若沒有拖曳，速度慢慢回到 base（0.25）
+                    const base = 0.25;
+                    if (!draggingRef.current) {
+                        velRef.current = velRef.current * friction + base * (1 - friction);
+                    } else {
+                        // 拖曳中也稍微減振，避免抖動
+                        velRef.current *= 0.95;
+                    }
 
-            if (carouselRef.current) {
-                carouselRef.current.style.transform = `rotateY(${angleRef.current}deg)`;
-            }
+                    angleRef.current = (angleRef.current + velRef.current) % 360;
 
-            rafRef.current = requestAnimationFrame(tick);
+                    if (carouselRef.current) {
+                        carouselRef.current.style.transform = `rotateY(${angleRef.current}deg)`;
+                    }
+
+                    rafRef.current = requestAnimationFrame(tick);
+                };
+
+                rafRef.current = requestAnimationFrame(tick);
+                return () => cancelAnimationFrame(rafRef.current);
+            }, []);
+
+            const onPointerDown = (e) => {
+                draggingRef.current = true;
+                lastXRef.current = e.clientX ?? (e.touches && e.touches[0]?.clientX) ?? 0;
             };
 
-            rafRef.current = requestAnimationFrame(tick);
-            return () => cancelAnimationFrame(rafRef.current);
-        }, []);
+            const onPointerMove = (e) => {
+                if (!draggingRef.current) return;
 
-        const onPointerDown = (e) => {
-            draggingRef.current = true;
-            lastXRef.current = e.clientX ?? (e.touches && e.touches[0]?.clientX) ?? 0;
-        };
+                const x = e.clientX ?? (e.touches && e.touches[0]?.clientX) ?? 0;
+                const dx = x - lastXRef.current;
+                lastXRef.current = x;
 
-        const onPointerMove = (e) => {
-            if (!draggingRef.current) return;
+                // dx 轉成角速度：你可以調 0.08~0.2 之間找手感
+                velRef.current = dx * 0.12;
+            };
 
-            const x = e.clientX ?? (e.touches && e.touches[0]?.clientX) ?? 0;
-            const dx = x - lastXRef.current;
-            lastXRef.current = x;
+            const onPointerUp = () => {
+                draggingRef.current = false;
+            };
 
-            // dx 轉成角速度：你可以調 0.08~0.2 之間找手感
-            velRef.current = dx * 0.12;
-        };
-
-        const onPointerUp = () => {
-            draggingRef.current = false;
-        };
-
-        return (
-            <div
-            className="scene"
-            onMouseDown={onPointerDown}
-            onMouseMove={onPointerMove}
-            onMouseUp={onPointerUp}
-            onMouseLeave={onPointerUp}
-            onTouchStart={onPointerDown}
-            onTouchMove={onPointerMove}
-            onTouchEnd={onPointerUp}
-            >
-            <div ref={carouselRef} className="carousel">
-                {items.map((item, index) => {
-                const angle = (360 / count) * index;
-                const transform = `
+            return (
+                <div
+                    className="scene"
+                    onMouseDown={onPointerDown}
+                    onMouseMove={onPointerMove}
+                    onMouseUp={onPointerUp}
+                    onMouseLeave={onPointerUp}
+                    onTouchStart={onPointerDown}
+                    onTouchMove={onPointerMove}
+                    onTouchEnd={onPointerUp}
+                >
+                    <div ref={carouselRef} className="carousel">
+                        {items.map((item, index) => {
+                            const angle = (360 / count) * index;
+                            const transform = `
                     rotateY(${angle}deg)
                     translateZ(calc(${radius}px + var(--pop-z)))
                 `;
 
-                return (
-                    <div
-                    key={index}
-                    className="carousel-item"
-                    style={{ transform }}
-                    onMouseEnter={(e) => e.currentTarget.style.setProperty("--pop-z", "70px")}
-                    onMouseLeave={(e) => e.currentTarget.style.setProperty("--pop-z", "0px")}
-                    >
-                    <div className="card-inner">
-                        {item.type === "video" ? (
-                        <video
-                            className="card-media"
-                            src={item.url}
-                            muted
-                            loop
-                            playsInline
-                            autoPlay
-                            preload="metadata"
-                        />
-                        ) : (
-                        <img
-                            className="card-media"
-                            src={item.url}
-                            alt="Memory"
-                            loading="lazy"
-                            decoding="async"
-                        />
-                        )}
+                            return (
+                                <div
+                                    key={index}
+                                    className="carousel-item"
+                                    style={{ transform }}
+                                    onMouseEnter={(e) => e.currentTarget.style.setProperty("--pop-z", "70px")}
+                                    onMouseLeave={(e) => e.currentTarget.style.setProperty("--pop-z", "0px")}
+                                >
+                                    <div className="card-inner">
+                                        {item.type === "video" ? (
+                                            <video
+                                                className="card-media"
+                                                src={item.url}
+                                                muted
+                                                loop
+                                                playsInline
+                                                autoPlay
+                                                preload="metadata"
+                                            />
+                                        ) : (
+                                            <img
+                                                className="card-media"
+                                                src={item.url}
+                                                alt="Memory"
+                                                loading="lazy"
+                                                decoding="async"
+                                            />
+                                        )}
+                                    </div>
+                                </div>
+                            );
+                        })}
                     </div>
-                    </div>
-                );
-                })}
-            </div>
-            </div>
-        );
-    }
-
-
-    // ======================
-    // App
-    // ======================
-    function App(){
-      const audioRef = useRef(null);
-      const [playing, setPlaying] = useState(false);
-      const [audioReady, setAudioReady] = useState(false);
-
-      useEffect(() => {
-        const audio = audioRef.current;
-        if (!audio) return;
-
-        const onCanPlay = () => setAudioReady(true);
-        const onPlay = () => setPlaying(true);
-        const onPause = () => setPlaying(false);
-
-        audio.addEventListener("canplay", onCanPlay);
-        audio.addEventListener("play", onPlay);
-        audio.addEventListener("pause", onPause);
-
-        return () => {
-          audio.removeEventListener("canplay", onCanPlay);
-          audio.removeEventListener("play", onPlay);
-          audio.removeEventListener("pause", onPause);
-        };
-      }, []);
-
-      const toggleMusic = async () => {
-        const audio = audioRef.current;
-        if (!audio) return;
-
-        try {
-          if (audio.paused) {
-            await audio.play();
-          } else {
-            audio.pause();
-          }
-        } catch (err) {
-          console.error("Audio play blocked:", err);
-          alert("瀏覽器可能阻擋自動播放，請再點一次「Music」按鈕。");
+                </div>
+            );
         }
-      };
 
-      return (
-        <div className="min-h-screen bg-gradient-to-b from-slate-900 via-red-950 to-slate-900 relative overflow-hidden">
-          <SnowEffect />
 
-          <audio ref={audioRef} loop preload="auto">
-            <source src={musicUrl} type="audio/mpeg" />
-          </audio>
+        // ======================
+        // App
+        // ======================
+        function App() {
+            const audioRef = useRef(null);
+            const [playing, setPlaying] = useState(false);
+            const [audioReady, setAudioReady] = useState(false);
 
-          {/* Music Button */}
-          <div className="fixed top-4 right-4 z-50">
-            <button
-              onClick={toggleMusic}
-              className={`px-4 py-2 rounded-full shadow-lg backdrop-blur-sm transition-all duration-300
+            useEffect(() => {
+                const audio = audioRef.current;
+                if (!audio) return;
+
+                const onCanPlay = () => setAudioReady(true);
+                const onPlay = () => setPlaying(true);
+                const onPause = () => setPlaying(false);
+
+                audio.addEventListener("canplay", onCanPlay);
+                audio.addEventListener("play", onPlay);
+                audio.addEventListener("pause", onPause);
+
+                return () => {
+                    audio.removeEventListener("canplay", onCanPlay);
+                    audio.removeEventListener("play", onPlay);
+                    audio.removeEventListener("pause", onPause);
+                };
+            }, []);
+
+            const toggleMusic = async () => {
+                const audio = audioRef.current;
+                if (!audio) return;
+
+                try {
+                    if (audio.paused) {
+                        await audio.play();
+                    } else {
+                        audio.pause();
+                    }
+                } catch (err) {
+                    console.error("Audio play blocked:", err);
+                    alert("瀏覽器可能阻擋自動播放，請再點一次「Music」按鈕。");
+                }
+            };
+
+            return (
+                <div className="min-h-screen bg-gradient-to-b from-slate-900 via-red-950 to-slate-900 relative overflow-hidden">
+                    <SnowEffect />
+
+                    <audio ref={audioRef} loop preload="auto">
+                        <source src={musicUrl} type="audio/mpeg" />
+                    </audio>
+
+                    {/* Music Button */}
+                    <div className="fixed top-4 right-4 z-50">
+                        <button
+                            onClick={toggleMusic}
+                            className={`px-4 py-2 rounded-full shadow-lg backdrop-blur-sm transition-all duration-300
                 ${playing ? "bg-yellow-500 text-red-950" : "bg-white/20 text-white hover:bg-white/30"}
               `}
-              title={audioReady ? "播放 / 暫停音樂" : "音樂載入中…"}
-            >
-              {playing ? "Music On" : "Music Off"}
-            </button>
-          </div>
+                            title={audioReady ? "播放 / 暫停音樂" : "音樂載入中…"}
+                        >
+                            {playing ? "Music On" : "Music Off"}
+                        </button>
+                    </div>
 
-          {/* Main */}
-          <div className="min-h-screen flex flex-col items-center justify-center text-white px-4 pb-10">
-            <div className="text-center mb-6">
-              <h1 className="title-font text-5xl md:text-7xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-200 via-yellow-400 to-yellow-200 drop-shadow-[0_2px_10px_rgba(255,255,0,0.25)]">
-                Merry Christmas
-              </h1>
-            </div>
+                    {/* Main */}
+                    <div className="min-h-screen flex flex-col items-center justify-center text-white px-4 pb-10">
+                        <div className="text-center mb-6">
+                            <h1 className="title-font text-5xl md:text-7xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-200 via-yellow-400 to-yellow-200 drop-shadow-[0_2px_10px_rgba(255,255,0,0.25)]">
+                                Merry Christmas
+                            </h1>
+                        </div>
 
-            <div className="text-center mb-10 relative">
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-72 h-72 bg-red-600/20 rounded-full blur-3xl"></div>
-              <h2 className="relative text-3xl md:text-5xl font-bold mb-4 drop-shadow-lg">
-                {toName}
-              </h2>
-              <p className="relative text-xl md:text-3xl text-yellow-100 font-light leading-relaxed whitespace-pre-line drop-shadow-md">
-                {message}
-              </p>
-            </div>
+                        <div className="text-center mb-10 relative">
+                            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-72 h-72 bg-red-600/20 rounded-full blur-3xl"></div>
+                            <h2 className="relative text-3xl md:text-5xl font-bold mb-4 drop-shadow-lg">
+                                {toName}
+                            </h2>
+                            <p className="relative text-xl md:text-3xl text-yellow-100 font-light leading-relaxed whitespace-pre-line drop-shadow-md">
+                                {message}
+                            </p>
+                        </div>
 
-            <div className="w-full max-w-5xl">
-              <Carousel items={myMemories} />
-            </div>
+                        <div className="w-full max-w-5xl">
+                            <Carousel items={myMemories} />
+                        </div>
 
-            <div className="mt-6 text-center text-white/60 text-sm md:text-base font-light tracking-widest uppercase">
-              From: {fromName}
-            </div>
+                        <div className="mt-6 text-center text-white/60 text-sm md:text-base font-light tracking-widest uppercase">
+                            From: {fromName}
+                        </div>
 
-            <div className="mt-4 text-center text-white/40 text-xs">
-              提示：真ㄉ不好弄...網路上都騙人。
-            </div>
-          </div>
-        </div>
-      );
-    }
+                        <div className="mt-4 text-center text-white/40 text-xs">
+                            提示：真ㄉ不好弄...網路上都騙人。
+                        </div>
+                    </div>
+                </div>
+            );
+        }
 
-    ReactDOM.createRoot(document.getElementById("root")).render(<App />);
-  </script>
+        ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+    </script>
 </body>
+
 </html>
